@@ -23,7 +23,7 @@ To run the script :
 
 <pre>python make_training_data.py</pre>
 
-You'll then be asked to enter the path to the BraTS 2015 dataset and a folder name to save the tfrecords to.
+You'll then be asked to enter the path to the BraTS 2015 dataset, a folder name to save the tfrecords to and the format in which the data has to be saved (tfrecord or npy).
 
 ## References
 <a id="1">[1]</a> 
