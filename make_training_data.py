@@ -3,6 +3,7 @@ from utils import io, parser
 
 from pipeline import BraTSPipeline
 from pipeline.processing import *
+from pipeline.h5 import HDF5Store
 from pipeline.recorder import TrainingTFRecorder
 from tqdm import tqdm
 
@@ -18,8 +19,8 @@ if __name__ == "__main__":
     save_format = input('\033[94m'+'Please enter format to save dataset to : \n'+'\033[0m')
     print('\n')
 
-    if save_format not in ['tfrecord', 'npy']:
-        raise ValueError('Format has to be in '.format(['tfrecord', 'npy']))
+    if save_format not in ['tfrecord', 'npy', 'h5']:
+        raise ValueError('Format has to be in '.format(['tfrecord', 'npy', 'h5']))
         
     """ ORGANIZE BRATS DATA """
     
@@ -37,15 +38,28 @@ if __name__ == "__main__":
     print('Number of cases : {}'.format(n_cases))
     
     for i, j in zip(split_names, n_cases):
-        os.makedirs(os.path.join(save_path, i), exist_ok = True)               
+        os.makedirs(os.path.join(save_path, i), exist_ok = True) 
+        
+        if save_format == 'h5':
+            file_path = os.path.join(save_path, i, 'h5_dataset.h5')
+            h5_store = HDF5Store(file_path, ['X', 'Y'], shapes=[(4, 128, 128), (128, 128)], dtype=[np.float32, np.uint8])
+        
         with tqdm(total=j, desc = 'Applying pipeline to {} data :'.format(i)) as pbar:
+
             for idx, (x, y) in enumerate(brats_pipeline.process(i)):
                 if save_format == 'tfrecord':
                     file_path = os.path.join(save_path, i, '{}_case_{}.tfrecord'.format(i, idx))
                     tfrecorder.save_tf_record(x, y, file_path)
-                else:
+
+                elif save_format == 'npy':
                     os.makedirs(os.path.join(save_path, i, 'x'), exist_ok=True)
                     os.makedirs(os.path.join(save_path, i, 'y'), exist_ok=True)
                     np.save(os.path.join(save_path, i, 'x', '{}_case_X_{}.npy'.format(i, idx)), x)
                     np.save(os.path.join(save_path, i, 'y', '{}_case_Y_{}.npy'.format(i, idx)), y)
+
+                elif save_format == 'h5':
+                    for data, target in zip(x, y):
+                        h5_store.append('X', data, x.shape[1:])
+                        h5_store.append('Y', target, y.shape[1:])
+
                 pbar.update()
