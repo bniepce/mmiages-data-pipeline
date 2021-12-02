@@ -3,15 +3,15 @@ import numpy as np
 from glob import glob
 
 
-def check_file(inp_str : str, ext : str) -> str:
+def check_file(path : str, ext : str) -> str:
     """Ask the user to enter a file path.
     Check if input string matches the existence of a file with a given extension.
     The input is asked until a correct file is given.
     
     Parameters
     ----------
-    inp_str : str
-        String the check
+    path : str
+        Path to check
     ext : 
         Extension of the file
     Return
@@ -21,7 +21,7 @@ def check_file(inp_str : str, ext : str) -> str:
     """
     while True:
         try:
-            f = input('\033[94m'+inp_str+'\n'+'\033[0m')
+            f = path
             if os.path.isfile(f):
                 if f.endswith(ext):
                     break
@@ -35,14 +35,14 @@ def check_file(inp_str : str, ext : str) -> str:
         break
     return f
 
-def check_path(inp_str : str, ext : str, lvl : int = 0) -> str:
+def check_path(path : str, ext : str, lvl : int = 0) -> str:
     """Ask the user to enter data path.
     Check a path by looking if files with given extension are present 
     at a certain level in the folder tree. The input is asked until files with the right extensions are found.
     
     Parameters
     ----------
-    inp_str : str
+    path : str
         Path string to check
     ext : 
         Extension of files to look for
@@ -54,7 +54,6 @@ def check_path(inp_str : str, ext : str, lvl : int = 0) -> str:
     """
     while True:
         try:
-            path = input('\033[94m'+inp_str+'\n'+'\033[0m')
             prefix = lvl*'**/'
             if glob(path+prefix+'*{}'.format(ext)):
                 break

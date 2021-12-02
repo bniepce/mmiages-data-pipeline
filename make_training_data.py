@@ -1,4 +1,4 @@
-import os
+import os, argparse
 from utils import io, parser
 
 from pipeline import BraTSPipeline
@@ -10,13 +10,31 @@ from tqdm import tqdm
 
 if __name__ == "__main__":
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--data_path',
+        help='Path to data directory',
+        required=True
+    )
+    parser.add_argument(
+        '--save_path',
+        help='Path to save data',
+        required=True
+    )
+    parser.add_argument(
+        '--format',
+        help='Format to save data',
+        required=True
+    )
+
+    args = parser.parse_args()
     
     """ INIT PARAMETERS """
 
     split_names = ['training', 'validation', 'testing']
-    data_path = io.check_path('Please enter path to folder containing training and validation data folders :', '.mha', lvl=3)
-    save_path = input('\033[94m'+'Please enter path to save dataset to : \n'+'\033[0m')
-    save_format = input('\033[94m'+'Please enter format to save dataset to : \n'+'\033[0m')
+    data_path = io.check_path(args.data_path, '.mha', lvl=3)
+    save_path = args.save_path
+    save_format = args.format
     print('\n')
 
     if save_format not in ['tfrecord', 'npy', 'h5']:
@@ -31,6 +49,7 @@ if __name__ == "__main__":
     tfrecorder = TrainingTFRecorder()
     brats_pipeline = BraTSPipeline(data_path)
     brats_pipeline.add_operation(resize)
+    brats_pipeline.add_operation(normalize)
     # brats_pipeline.add_operation(augment)
     
     n_cases = [len(glob(os.path.join(data_path, '{}/*'.format(name)))) for name in split_names]
