@@ -31,7 +31,7 @@ if __name__ == "__main__":
     
     """ INIT PARAMETERS """
 
-    split_names = ['training', 'validation', 'testing']
+    split_names = ['training', 'testing']
     data_path = io.check_path(args.data_path, '.mha', lvl=3)
     save_path = args.save_path
     save_format = args.format
@@ -42,14 +42,14 @@ if __name__ == "__main__":
         
     """ ORGANIZE BRATS DATA """
     
-    io.organize_dataset(data_path)
+    io.organize_dataset(data_path, split_names)
     
     """ PERFORM PIPELINE """
     
     tfrecorder = TrainingTFRecorder()
     brats_pipeline = BraTSPipeline(data_path)
     brats_pipeline.add_operation(resize)
-    brats_pipeline.add_operation(normalize)
+    # brats_pipeline.add_operation(normalize)
     # brats_pipeline.add_operation(augment)
     
     n_cases = [len(glob(os.path.join(data_path, '{}/*'.format(name)))) for name in split_names]
@@ -61,7 +61,7 @@ if __name__ == "__main__":
         
         if save_format == 'h5':
             file_path = os.path.join(save_path, i, 'h5_dataset.h5')
-            h5_store = HDF5Store(file_path, ['X', 'Y'], shapes=[(4, 128, 128), (128, 128)], dtype=[np.float32, np.uint8])
+            h5_store = HDF5Store(file_path, ['X', 'Y'], shapes=[(128, 128, 4), (128, 128)], dtype=[np.uint8, np.float32])
         
         with tqdm(total=j, desc = 'Applying pipeline to {} data :'.format(i)) as pbar:
 
@@ -78,7 +78,10 @@ if __name__ == "__main__":
 
                 elif save_format == 'h5':
                     for data, target in zip(x, y):
-                        h5_store.append('X', data, x.shape[1:])
-                        h5_store.append('Y', target, y.shape[1:])
+                        data *= 255.0 / data.max()
+                        target = np.divide(target.astype('float32'), 4)
+                        data = np.moveaxis(data, 0, 2)
+                        h5_store.append('X', data.astype('uint8'), data.shape)
+                        h5_store.append('Y', target, target.shape)
 
                 pbar.update()

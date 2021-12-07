@@ -65,10 +65,8 @@ def check_path(path : str, ext : str, lvl : int = 0) -> str:
         break
     return path
 
-def organize_dataset(data_path):
-    
-    split_names = ['training', 'validation', 'testing']
-    
+def organize_dataset(data_path, split_names):
+
     if os.path.isdir(data_path + 'training'):
         print('Skipping dataset splitting as it has already been done.')
     else:
@@ -85,7 +83,7 @@ def organize_dataset(data_path):
         HGG = glob(os.path.join(data_path, 'HGG/*'))
         LGG = glob(os.path.join(data_path, 'LGG/*'))
         
-        hgg_split, lgg_split = split(HGG, [70, 20, 10]), split(LGG, [70, 20, 10])
+        hgg_split, lgg_split = split(HGG, [90, 10]), split(LGG, [90, 10])
         
         for (s_hgg, s_lgg, s_name) in zip(hgg_split, lgg_split, split_names):
             for case in s_hgg:

@@ -108,6 +108,8 @@ def augment(source : tuple, augmentations = aug_operations, augment_ratio=0.1):
 def normalize(source : tuple):
     for data in source:
         x, y = data
-        x = cv2.normalize(x.astype('float'), None, 0.0, 1.0, cv2.NORM_MINMAX) 
+        print(x.shape)
+        x *= 255.0 / x.max()
+        y = np.divide(y.astype('uint8'), 4)
         x = np.moveaxis(x, 1, 3)
-        yield (x.astype('float32'), y.astype('int8'))
+        yield (x.astype('uint8'), y)
