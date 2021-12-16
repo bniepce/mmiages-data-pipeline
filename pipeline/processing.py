@@ -1,7 +1,6 @@
 import os, cv2
 import numpy as np
 import SimpleITK as sitk
-
 from .augmentations import aug_operations
 from glob import glob
 

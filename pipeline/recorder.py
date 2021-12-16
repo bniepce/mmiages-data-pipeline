@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+import matplotlib.pyplot as plt
 
 class TFRecorder(object):
     """
@@ -15,7 +16,7 @@ class TFRecorder(object):
     """
     def __init__(self):
         self.x_dtype = tf.float32
-        self.y_dtype = tf.int8
+        self.y_dtype = tf.uint8
 
     def _bytes_feature(self, value):
         """
@@ -74,6 +75,7 @@ class TrainingTFRecorder(TFRecorder):
         """
         with tf.io.TFRecordWriter(path) as writer:
             for i in range(len(x)):
+                x[i] *= 255.0 / x[i].max()
                 example = self.get_tf_example(x[i], y[i])
                 writer.write(example.SerializeToString())
         

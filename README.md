@@ -23,6 +23,8 @@ python make_training_data.py --data_path DATA_PATH \
 
 Here the volume is bound to the current directory and the dataset folder is assumed to be contained at the root of this directory.
 
+> **_NOTE:_**  The shape of a case after pre-processing is (4, 128, 128).
+
 ## References
 <a id="1">[1]</a> 
  Brad Niepceron, Ahmed Nait-Sidi-Moh & Filippo Grassia (2020) 

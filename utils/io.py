@@ -67,7 +67,7 @@ def check_path(path : str, ext : str, lvl : int = 0) -> str:
 
 def organize_dataset(data_path, split_names):
 
-    if os.path.isdir(data_path + 'training'):
+    if os.path.isdir(os.path.join(data_path, 'training')):
         print('Skipping dataset splitting as it has already been done.')
     else:
         def split(l, perc):

@@ -1,11 +1,15 @@
 import os, argparse
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.utils import normalize as knorm
 from utils import io, parser
-
 from pipeline import BraTSPipeline
 from pipeline.processing import *
 from pipeline.h5 import HDF5Store
 from pipeline.recorder import TrainingTFRecorder
 from tqdm import tqdm
+
 
 
 if __name__ == "__main__":
@@ -32,7 +36,7 @@ if __name__ == "__main__":
     """ INIT PARAMETERS """
 
     split_names = ['training', 'testing']
-    data_path = io.check_path(args.data_path, '.mha', lvl=3)
+    data_path = io.check_path(args.data_path, '.mha', lvl=4)
     save_path = args.save_path
     save_format = args.format
     print('\n')
@@ -61,7 +65,7 @@ if __name__ == "__main__":
         
         if save_format == 'h5':
             file_path = os.path.join(save_path, i, 'h5_dataset.h5')
-            h5_store = HDF5Store(file_path, ['X', 'Y'], shapes=[(128, 128, 4), (128, 128)], dtype=[np.uint8, np.float32])
+            h5_store = HDF5Store(file_path, ['X', 'Y'], shapes=[(4, 128, 128), (5, 128, 128)], dtype=[np.float32, np.uint8])
         
         with tqdm(total=j, desc = 'Applying pipeline to {} data :'.format(i)) as pbar:
 
@@ -79,9 +83,9 @@ if __name__ == "__main__":
                 elif save_format == 'h5':
                     for data, target in zip(x, y):
                         data *= 255.0 / data.max()
-                        target = np.divide(target.astype('float32'), 4)
-                        data = np.moveaxis(data, 0, 2)
-                        h5_store.append('X', data.astype('uint8'), data.shape)
+                        target = to_categorical(target, 5)
+                        target = np.moveaxis(target, 2, 0)
+                        data = knorm(data, axis = 0)
+                        h5_store.append('X', data, data.shape)
                         h5_store.append('Y', target, target.shape)
-
                 pbar.update()
