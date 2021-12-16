@@ -1,25 +1,24 @@
 import tensorflow as tf
 from abc import ABC, abstractmethod
-from glob import glob
-from PIL import Image
-import matplotlib.pyplot as plt
-import numpy as np
 
 class AbstractRecorder(ABC):
     """Class to read tfrecord and create tensorflow datasets
     ...
     Attributes
     ----------
-    data_shape : tuplue 
-        Shape of data registered in tfrecord files
+    x_shape : tuple 
+        Shape of x registered in tfrecord files
+    y_shape : tuple 
+        Shape of y registered in tfrecord files
     x_dtype : str
         Type to use for data array
     y_dtype: str
         Type to use for label array
     """
-    def __init__(self, data_shape):
+    def __init__(self, x_shape, y_shape, x_dtype = tf.float32, y_dtype = tf.uint8):
         super().__init__()
-        self.shape = data_shape
+        self.x_shape = x_shape
+        self.y_shape = y_shape
         self.x_dtype = tf.float32
         self.y_dtype = tf.uint8
     
@@ -37,15 +36,17 @@ class TrainingRecorder(AbstractRecorder):
     ...
     Attributes
     ----------
-    data_shape : tuple
-        Shape of the input data
+    x_shape : tuple 
+        Shape of x registered in tfrecord files
+    y_shape : tuple 
+        Shape of y registered in tfrecord files
     x_dtype : str
         Type to use for data array
     y_dtype: str
         Type to use for label array
     """
-    def __init__(self, data_shape):
-        super().__init__(data_shape)
+    def __init__(self, x_shape, y_shape, x_dtype = tf.float32, y_dtype = tf.uint8):
+        super().__init__(x_shape, y_shape, x_dtype, y_dtype)
 
     def parse_function(self, proto):
         """Parse function to create the training Dataset object
@@ -57,20 +58,19 @@ class TrainingRecorder(AbstractRecorder):
         """
         features = {
             'image': tf.io.FixedLenFeature([], dtype=tf.string),
-            'ground_truth': tf.io.FixedLenFeature([128, 128], dtype=tf.int64)
+            'ground_truth': tf.io.FixedLenFeature(self.y_shape, dtype=tf.int64)
         }
         record = tf.io.parse_single_example(proto, features)
         image_raw = tf.io.decode_raw(record['image'], self.x_dtype)
-        image_raw = tf.reshape(image_raw, shape=[4, 128, 128])
+        image_raw = tf.reshape(image_raw, shape=self.x_shape)
 
-        label_raw = tf.one_hot(record["ground_truth"], depth = 5)
-        label_raw = tf.cast(record["ground_truth"], self.y_dtype)
-
+        label_raw = tf.one_hot(record["ground_truth"], 5, dtype=tf.int32)
+        label_raw = tf.cast(label_raw, self.y_dtype)
         return image_raw, label_raw
 
     def set_vector_shape(self, x, y):
-        x.set_shape([4, 128, 128])
-        y.set_shape([128, 128])
+        x.set_shape(self.x_shape)
+        y.set_shape(self.y_shape.append(5))
         return x, y
 
     def normalize(self, x, y):
@@ -100,13 +100,3 @@ class TrainingRecorder(AbstractRecorder):
             dataset = dataset.repeat()
         dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
         return dataset
-
-def test():
-
-    records = glob('saved_dataset/**/**/*.tfrecord')
-    recorder = TrainingRecorder(data_shape = [4, 128, 128])
-    training_dataset = recorder.create_data_iterator(records, 1, repeat=False)
-    for i, j in training_dataset:
-        plt.imshow(i[0].numpy()[0])
-        plt.savefig('./test/images/test.png')
-        break

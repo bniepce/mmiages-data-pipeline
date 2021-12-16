@@ -10,10 +10,10 @@ The training set includes 220 cases of high-grade glioma (HGG) and 54 cases of l
 ## Run Script
 
 
-Before running the pipeline to create the dataset as tfrecord files, you must have the BraTS 2015 dataset in its original form (containing the HGG and LGG folders). The creation of the data will also re-organize this folder to have three new folders namely 'training', 'validation' and 'testing'. These folders contain 70%, 20% and 10% of the dataset respectively. <br>
+Before running the pipeline to create the dataset as tfrecord/h5/numpy files, you must have the BraTS 2015 dataset in its original form (containing the HGG and LGG folders). The creation of the data will also re-organize this folder to have three new folders namely 'training' and 'testing'. These folders contain 80%, 20% of the dataset respectively. <br>
 A Dockerfile is provided to build a docker image in which you will be able to run the code.
 
-```bash 
+```bash
 docker build . -t mmiages_pipeline_image
 docker run -it --rm -v $(pwd):/workdir mmiages_pipeline_image \
 python make_training_data.py --data_path DATA_PATH \
@@ -23,7 +23,7 @@ python make_training_data.py --data_path DATA_PATH \
 
 Here the volume is bound to the current directory and the dataset folder is assumed to be contained at the root of this directory.
 
-> **_NOTE:_**  The shape of a case after pre-processing is (4, 128, 128).
+> **_NOTE:_**  The pipeline for tfrecord prepares the data to use a "channel last" Tensor representation e.g. (N, H, W, C).
 
 ## References
 <a id="1">[1]</a> 

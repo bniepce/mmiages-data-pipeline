@@ -72,6 +72,7 @@ if __name__ == "__main__":
             for idx, (x, y) in enumerate(brats_pipeline.process(i)):
                 if save_format == 'tfrecord':
                     file_path = os.path.join(save_path, i, '{}_case_{}.tfrecord'.format(i, idx))
+                    x = np.moveaxis(x, 1, 3)
                     tfrecorder.save_tf_record(x, y, file_path)
 
                 elif save_format == 'npy':
